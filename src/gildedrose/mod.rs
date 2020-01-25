@@ -11,6 +11,18 @@ impl Item {
     pub fn new(name: String, sell_in: i32, quality: i32) -> Item {
         Item { name: name, sell_in: sell_in, quality: quality }
     }
+
+    pub fn increase_quality(&mut self) {
+        if self.quality < 50 {
+            self.quality = self.quality + 1;
+        }
+    }
+
+    pub fn decrease_quality(&mut self) {
+        if self.quality > 0 {
+            self.quality = self.quality - 1;
+        }
+    }
 }
 
 pub struct GildedRose {
@@ -41,44 +53,32 @@ impl GildedRose {
     }
 
     fn update_brie(item: &mut Item) -> () {
-        GildedRose::increase_quality(item);
+        item.increase_quality();
         item.sell_in = item.sell_in - 1;
         if item.sell_in < 0 {
-            GildedRose::increase_quality(item);
+            item.increase_quality();
         }
     }
 
     fn update_backstage(item: &mut Item) -> () {
-        GildedRose::increase_quality(item);
+        item.increase_quality();
         if item.sell_in < 11 {
-            GildedRose::increase_quality(item);
+            item.increase_quality();
         }
         if item.sell_in < 6 {
-            GildedRose::increase_quality(item);
+            item.increase_quality();
         }
         item.sell_in = item.sell_in - 1;
         if item.sell_in < 0 {
-            item.quality = item.quality - item.quality;
+            item.quality = 0;
         }
     }
 
     fn update_normal(item: &mut Item) -> () {
-        GildedRose::decrease_quality(item);
+        item.decrease_quality();
         item.sell_in = item.sell_in - 1;
         if item.sell_in < 0 {
-            GildedRose::decrease_quality(item);
-        }
-    }
-
-    fn decrease_quality(item: &mut Item) {
-        if item.quality > 0 {
-            item.quality = item.quality - 1;
-        }
-    }
-
-    fn increase_quality(item: &mut Item) -> () {
-        if item.quality < 50 {
-            item.quality = item.quality + 1;
+            item.decrease_quality();
         }
     }
 }
