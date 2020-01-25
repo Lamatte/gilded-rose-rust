@@ -6,16 +6,49 @@ pub trait Aging {
 }
 
 struct DefaultAging;
+
+struct SulfurasAging;
+
+struct BrieAging;
+
+struct BackStageAging;
+
 impl Aging for DefaultAging {
     fn update(&self, item: &mut Item) {
-        if item.name == "Aged Brie" {
-            item.update_brie()
-        } else if item.name == "Backstage passes to a TAFKAL80ETC concert" {
-            item.update_backstage()
-        } else if item.name == "Sulfuras, Hand of Ragnaros" {
-            item.update_sulfuras();
-        } else {
-            item.update_normal()
+        item.decrease_quality();
+        item.sell_in = item.sell_in - 1;
+        if item.sell_in < 0 {
+            item.decrease_quality();
+        }
+    }
+}
+
+impl Aging for SulfurasAging {
+    fn update(&self, _item: &mut Item) {}
+}
+
+impl Aging for BrieAging {
+    fn update(&self, item: &mut Item) {
+        item.increase_quality();
+        item.sell_in = item.sell_in - 1;
+        if item.sell_in < 0 {
+            item.increase_quality();
+        }
+    }
+}
+
+impl Aging for BackStageAging {
+    fn update(&self, item: &mut Item) {
+        item.increase_quality();
+        if item.sell_in < 11 {
+            item.increase_quality();
+        }
+        if item.sell_in < 6 {
+            item.increase_quality();
+        }
+        item.sell_in = item.sell_in - 1;
+        if item.sell_in < 0 {
+            item.quality = 0;
         }
     }
 }
@@ -26,48 +59,25 @@ pub struct Item {
     pub quality: i32,
 }
 
+fn get_aging(item: &Item) -> Box<dyn Aging> {
+    if item.name == "Aged Brie" {
+        Box::new(BrieAging {})
+    } else if item.name == "Backstage passes to a TAFKAL80ETC concert" {
+        Box::new(BackStageAging {})
+    } else if item.name == "Sulfuras, Hand of Ragnaros" {
+        Box::new(SulfurasAging {})
+    } else {
+        Box::new(DefaultAging {})
+    }
+}
+
 impl Item {
     pub fn new(name: String, sell_in: i32, quality: i32) -> Item {
         Item { name: name, sell_in: sell_in, quality: quality }
     }
 
     fn update(&mut self) {
-        let aging = Box::new(DefaultAging{});
-        aging.update(self)
-    }
-
-    fn update_sulfuras(&mut self) {
-        // nop !
-    }
-
-    fn update_brie(&mut self) -> () {
-        self.increase_quality();
-        self.sell_in = self.sell_in - 1;
-        if self.sell_in < 0 {
-            self.increase_quality();
-        }
-    }
-
-    fn update_backstage(&mut self) -> () {
-        self.increase_quality();
-        if self.sell_in < 11 {
-            self.increase_quality();
-        }
-        if self.sell_in < 6 {
-            self.increase_quality();
-        }
-        self.sell_in = self.sell_in - 1;
-        if self.sell_in < 0 {
-            self.quality = 0;
-        }
-    }
-
-    fn update_normal(&mut self) -> () {
-        self.decrease_quality();
-        self.sell_in = self.sell_in - 1;
-        if self.sell_in < 0 {
-            self.decrease_quality();
-        }
+        get_aging(self).update(self)
     }
 
     fn increase_quality(&mut self) {
