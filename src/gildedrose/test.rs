@@ -6,5 +6,5 @@ pub fn foo() {
     let mut rose = GildedRose::new(items);
     rose.update_quality();
 
-    assert_eq!("fixme", rose.items[0].name);
+    assert_eq!("foo", rose.items[0].name);
 }
