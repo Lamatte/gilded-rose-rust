@@ -1,6 +1,25 @@
 use std::string;
 use std::vec;
 
+pub trait Aging {
+    fn update(&self, item: &mut Item);
+}
+
+struct DefaultAging;
+impl Aging for DefaultAging {
+    fn update(&self, item: &mut Item) {
+        if item.name == "Aged Brie" {
+            item.update_brie()
+        } else if item.name == "Backstage passes to a TAFKAL80ETC concert" {
+            item.update_backstage()
+        } else if item.name == "Sulfuras, Hand of Ragnaros" {
+            item.update_sulfuras();
+        } else {
+            item.update_normal()
+        }
+    }
+}
+
 pub struct Item {
     pub name: string::String,
     pub sell_in: i32,
@@ -12,13 +31,52 @@ impl Item {
         Item { name: name, sell_in: sell_in, quality: quality }
     }
 
-    pub fn increase_quality(&mut self) {
+    fn update(&mut self) {
+        let aging = Box::new(DefaultAging{});
+        aging.update(self)
+    }
+
+    fn update_sulfuras(&mut self) {
+        // nop !
+    }
+
+    fn update_brie(&mut self) -> () {
+        self.increase_quality();
+        self.sell_in = self.sell_in - 1;
+        if self.sell_in < 0 {
+            self.increase_quality();
+        }
+    }
+
+    fn update_backstage(&mut self) -> () {
+        self.increase_quality();
+        if self.sell_in < 11 {
+            self.increase_quality();
+        }
+        if self.sell_in < 6 {
+            self.increase_quality();
+        }
+        self.sell_in = self.sell_in - 1;
+        if self.sell_in < 0 {
+            self.quality = 0;
+        }
+    }
+
+    fn update_normal(&mut self) -> () {
+        self.decrease_quality();
+        self.sell_in = self.sell_in - 1;
+        if self.sell_in < 0 {
+            self.decrease_quality();
+        }
+    }
+
+    fn increase_quality(&mut self) {
         if self.quality < 50 {
             self.quality = self.quality + 1;
         }
     }
 
-    pub fn decrease_quality(&mut self) {
+    fn decrease_quality(&mut self) {
         if self.quality > 0 {
             self.quality = self.quality - 1;
         }
@@ -36,49 +94,7 @@ impl GildedRose {
 
     pub fn update_quality(&mut self) {
         for item in &mut self.items {
-            if item.name == "Aged Brie" {
-                GildedRose::update_brie(item)
-            } else if item.name == "Backstage passes to a TAFKAL80ETC concert" {
-                GildedRose::update_backstage(item)
-            } else if item.name == "Sulfuras, Hand of Ragnaros" {
-                GildedRose::update_sulfuras();
-            } else {
-                GildedRose::update_normal(item)
-            }
-        }
-    }
-
-    fn update_sulfuras() {
-        // nop !
-    }
-
-    fn update_brie(item: &mut Item) -> () {
-        item.increase_quality();
-        item.sell_in = item.sell_in - 1;
-        if item.sell_in < 0 {
-            item.increase_quality();
-        }
-    }
-
-    fn update_backstage(item: &mut Item) -> () {
-        item.increase_quality();
-        if item.sell_in < 11 {
-            item.increase_quality();
-        }
-        if item.sell_in < 6 {
-            item.increase_quality();
-        }
-        item.sell_in = item.sell_in - 1;
-        if item.sell_in < 0 {
-            item.quality = 0;
-        }
-    }
-
-    fn update_normal(item: &mut Item) -> () {
-        item.decrease_quality();
-        item.sell_in = item.sell_in - 1;
-        if item.sell_in < 0 {
-            item.decrease_quality();
+            item.update()
         }
     }
 }
